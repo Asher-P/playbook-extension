@@ -1,3 +1,8 @@
+// Open side panel when extension icon is clicked
+chrome.action.onClicked.addListener((tab) => {
+  chrome.sidePanel.open({ tabId: tab.id });
+});
+
 const PLAYBOOKS_KEY = 'playbooks';
 
 async function getPlaybooks() {

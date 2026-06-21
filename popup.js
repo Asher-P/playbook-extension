@@ -48,8 +48,8 @@ const btnSchedule  = document.getElementById('btnSchedule');
 let isRecording = false;
 
 // ── Recording ──
-// Record button: fires START_RECORDING then closes popup so user can interact with WhatsApp.
-// The floating overlay injected by recorder.js handles Stop & Save independently.
+let pollTimer = null;
+
 btnRecord.addEventListener('click', async () => {
   const tab = await getWhatsAppTab();
   if (!tab) { alert('Open WhatsApp Web first.'); return; }
@@ -60,12 +60,25 @@ btnRecord.addEventListener('click', async () => {
     await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['recorder.js'] });
     await sendToContent(tab.id, { action: 'START_RECORDING', name });
   }
-  // Close popup — overlay on WhatsApp page takes over
-  window.close();
+  isRecording = true;
+  btnRecord.style.display = 'none';
+  btnStop.style.display   = 'block';
+  recordBadge.className   = 'status-badge badge-recording';
+  recordBadge.textContent = 'Recording…';
+  stepCount.textContent   = '0 steps captured';
+
+  // Poll recorder for live step count
+  pollTimer = setInterval(async () => {
+    if (!isRecording) { clearInterval(pollTimer); return; }
+    try {
+      const r = await sendToContent(tab.id, { action: 'GET_STEP_COUNT' });
+      if (r) stepCount.textContent = `${r.count} steps captured`;
+    } catch { /* tab navigated away */ }
+  }, 500);
 });
 
-// Stop button kept for cases where popup is reopened mid-recording
 btnStop.addEventListener('click', async () => {
+  clearInterval(pollTimer);
   const tab = await getWhatsAppTab();
   if (!tab) return;
   const resp = await sendToContent(tab.id, { action: 'STOP_RECORDING' });
