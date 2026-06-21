@@ -40,10 +40,22 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
   await clearSchedule(name);
 });
 
-// Message from popup: run immediately
+async function savePlaybook(name, steps) {
+  const p = await getPlaybooks();
+  p[name] = { steps, createdAt: Date.now(), schedule: null };
+  await chrome.storage.local.set({ [PLAYBOOKS_KEY]: p });
+}
+
+// Messages from popup or content scripts
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg.action === 'RUN_PLAYBOOK') {
     runPlaybookOnTab(msg.tabId, msg.steps)
+      .then(() => sendResponse({ ok: true }))
+      .catch(e => sendResponse({ ok: false, error: e.message }));
+    return true;
+  }
+  if (msg.action === 'SAVE_PLAYBOOK') {
+    savePlaybook(msg.name, msg.steps)
       .then(() => sendResponse({ ok: true }))
       .catch(e => sendResponse({ ok: false, error: e.message }));
     return true;

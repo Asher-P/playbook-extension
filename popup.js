@@ -48,28 +48,23 @@ const btnSchedule  = document.getElementById('btnSchedule');
 let isRecording = false;
 
 // ── Recording ──
+// Record button: fires START_RECORDING then closes popup so user can interact with WhatsApp.
+// The floating overlay injected by recorder.js handles Stop & Save independently.
 btnRecord.addEventListener('click', async () => {
   const tab = await getWhatsAppTab();
   if (!tab) { alert('Open WhatsApp Web first.'); return; }
+  const name = nameInput.value.trim() || `Playbook ${new Date().toLocaleString()}`;
   try {
-    await sendToContent(tab.id, { action: 'START_RECORDING' });
+    await sendToContent(tab.id, { action: 'START_RECORDING', name });
   } catch {
-    // content script may not be injected yet — inject it
     await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['recorder.js'] });
-    await sendToContent(tab.id, { action: 'START_RECORDING' });
+    await sendToContent(tab.id, { action: 'START_RECORDING', name });
   }
-  isRecording = true;
-  btnRecord.style.display = 'none';
-  btnStop.style.display   = 'block';
-  recordBadge.className   = 'status-badge badge-recording';
-  recordBadge.textContent = 'Recording…';
-  stepCount.textContent   = '0 steps recorded';
-  // poll step count visual
-  const poll = setInterval(async () => {
-    if (!isRecording) { clearInterval(poll); return; }
-  }, 500);
+  // Close popup — overlay on WhatsApp page takes over
+  window.close();
 });
 
+// Stop button kept for cases where popup is reopened mid-recording
 btnStop.addEventListener('click', async () => {
   const tab = await getWhatsAppTab();
   if (!tab) return;
@@ -82,10 +77,8 @@ btnStop.addEventListener('click', async () => {
 
   const steps = resp?.steps || [];
   stepCount.textContent = `${steps.length} steps recorded`;
-
   if (!steps.length) { alert('No steps recorded.'); return; }
-  let name = nameInput.value.trim();
-  if (!name) name = `Playbook ${new Date().toLocaleString()}`;
+  let name = nameInput.value.trim() || `Playbook ${new Date().toLocaleString()}`;
   await savePlaybook(name, steps);
   nameInput.value = '';
   await renderList();
