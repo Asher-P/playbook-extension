@@ -17,14 +17,14 @@ Each step = `{ type: "click"|"input"|"key"|"wait", selector, value, delay }`
 - `wait` → ms gap (auto-captured between actions)
 
 ## Micro-steps (build order)
-- [ ] 1. Scaffold `manifest.json` (MV3, permissions, content scripts, action popup).
-- [ ] 2. Build `popup.html` static UI (record btn, playbook name, datetime input, list, schedule btn).
-- [ ] 3. `storage.js` — save/load/delete playbooks + schedules.
-- [ ] 4. `recorder.js` — capture clicks + keystrokes into step model; toggle via message from popup.
-- [ ] 5. `popup.js` — wire Record/Stop, save recorded playbook to storage, render list.
-- [ ] 6. `player.js` — replay step model with delays + element-wait.
-- [ ] 7. `background.js` — set `chrome.alarms` for one-time time; on alarm, run player on the WhatsApp tab.
-- [ ] 8. `popup.js` — wire datetime + Schedule/Cancel to background alarms.
+- [x] 1. Scaffold `manifest.json` (MV3, permissions, content scripts, action popup).
+- [x] 2. Build `popup.html` static UI (record btn, playbook name, datetime input, list, schedule btn).
+- [x] 3. `storage.js` — save/load/delete playbooks + schedules.
+- [x] 4. `recorder.js` — capture clicks + keystrokes into step model; toggle via message from popup.
+- [x] 5. `popup.js` — wire Record/Stop, save recorded playbook to storage, render list.
+- [x] 6. `player.js` — replay step model with delays + element-wait.
+- [x] 7. `background.js` — set `chrome.alarms` for one-time time; on alarm, run player on the WhatsApp tab.
+- [x] 8. `popup.js` — wire datetime + Schedule/Cancel to background alarms.
 - [ ] 9. Manual test pass on web.whatsapp.com; icons + README.
 
 ## Open risks (flag, not blocking)
